@@ -1,0 +1,127 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Project Ops System API",
+        "description": "API for accessing the Project Operations Management System.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://project-management-nj4qgzihh-maluradityas-projects.vercel.app/",
+            "description": "Production Server"
+        }
+    ],
+    "paths": {
+        "/api/chatgpt/actions": {
+            "post": {
+                "operationId": "executeAction",
+                "summary": "Execute an operational action (Create Task, etc.)",
+                "description": "Performs a specific action on the project management system.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "action": {
+                                        "type": "string",
+                                        "description": "The specific action to perform.",
+                                        "enum": [
+                                            "create_task",
+                                            "get_status",
+                                            "log_update"
+                                        ]
+                                    },
+                                    "payload": {
+                                        "type": "object",
+                                        "description": "Dynamic payload depending on the action.",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "projectId": {
+                                                "type": "string"
+                                            },
+                                            "priority": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "LOW",
+                                                    "MEDIUM",
+                                                    "HIGH"
+                                                ]
+                                            },
+                                            "content": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "action",
+                                    "payload"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Action successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/projects": {
+            "get": {
+                "operationId": "getProjects",
+                "summary": "List all projects",
+                "description": "Retrieve a list of all active projects and their metadata.",
+                "responses": {
+                    "200": {
+                        "description": "List of projects",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

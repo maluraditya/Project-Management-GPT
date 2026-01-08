@@ -1,0 +1,118 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum Sentiment {
+  ON_TRACK
+  AT_RISK
+  BLOCKED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  avatarUrl String?
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projectsOwned Project[]
+  tasksAssigned Task[]
+  updates       Update[]
+  decisions     Decision[]
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(PLANNING)
+  ownerId     String
+  owner       User          @relation(fields: [ownerId], references: [id])
+  startDate   DateTime?
+  targetDate  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  tasks     Task[]
+  updates   Update[]
+  decisions Decision[]
+}
+
+model Task {
+  id           String       @id @default(uuid())
+  title        String
+  description  String?
+  status       TaskStatus   @default(TODO)
+  priority     TaskPriority @default(MEDIUM)
+  projectId    String
+  project      Project      @relation(fields: [projectId], references: [id])
+  assigneeId   String?
+  assignee     User?        @relation(fields: [assigneeId], references: [id])
+  parentTaskId String?
+  parentTask   Task?        @relation("SubTasks", fields: [parentTaskId], references: [id])
+  subTasks     Task[]       @relation("SubTasks")
+  dueDate      DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Update {
+  id        String    @id @default(uuid())
+  content   String
+  sentiment Sentiment @default(ON_TRACK)
+  blockers  String[]
+  forDate   DateTime  @default(now())
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id])
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+}
+
+model Decision {
+  id        String   @id @default(uuid())
+  title     String
+  context   String?
+  outcome   String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  decidedBy String
+  user      User     @relation(fields: [decidedBy], references: [id])
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+}

@@ -16,8 +16,9 @@ export async function POST(request: Request) {
     }
 
     if (action === 'create_project') {
-        const { name, description, status, targetDate } = payload;
+        const { id, name, description, status, targetDate } = payload;
         const { data, error } = await supabase.from('Project').insert([{
+            id, // Use client-provided UUID
             name,
             description,
             status: status || 'PLANNING',

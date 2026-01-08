@@ -1,26 +1,25 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { cn } from '@/lib/utils';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { Sidebar } from "@/components/layout/Sidebar";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: 'Project Ops System',
-  description: 'AI-Powered Project Management',
+  title: "Project Ops System",
+  description: "Enterprise-grade project and operations management",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className={cn(inter.className, "bg-slate-50 min-h-screen flex")}>
+      <body className={`${inter.variable} font-sans antialiased`}>
         <Sidebar />
-        <main className="flex-1 h-screen overflow-y-auto">
+        <main className="pl-64 min-h-screen">
           {children}
         </main>
       </body>

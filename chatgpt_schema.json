@@ -2,12 +2,12 @@
     "openapi": "3.1.0",
     "info": {
         "title": "Project Ops System API",
-        "description": "API for accessing the Project Operations Management System.",
-        "version": "1.0.0"
+        "description": "API for the Project Operations Management System. Use executeAction for all operations.",
+        "version": "2.0.0"
     },
     "servers": [
         {
-            "url": "https://project-management-nj4qgzihh-maluradityas-projects.vercel.app/",
+            "url": "https://project-management-nj4qgzihh-maluradityas-projects.vercel.app",
             "description": "Production Server"
         }
     ],
@@ -15,33 +15,58 @@
         "/api/chatgpt/actions": {
             "post": {
                 "operationId": "executeAction",
-                "summary": "Execute an operational action (Create Task, etc.)",
-                "description": "Performs a specific action on the project management system.",
+                "summary": "Execute an operation on the Project Ops System",
+                "description": "This is the ONLY endpoint you use. Pass the 'action' and 'payload' to perform operations like creating projects, creating tasks, or fetching status.",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "type": "object",
+                                "required": [
+                                    "action",
+                                    "payload"
+                                ],
                                 "properties": {
                                     "action": {
                                         "type": "string",
-                                        "description": "The specific action to perform.",
+                                        "description": "The operation to perform. Choose ONE of the following.",
                                         "enum": [
+                                            "create_project",
                                             "create_task",
-                                            "get_status",
-                                            "log_update"
+                                            "get_status"
                                         ]
                                     },
                                     "payload": {
                                         "type": "object",
-                                        "description": "Dynamic payload depending on the action.",
+                                        "description": "The data for the action. Fields depend on the action chosen. See descriptions below.",
                                         "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "description": "ACTION: create_project ONLY. A UUID v4 that YOU generate. Example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479'. REQUIRED for create_project."
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "description": "ACTION: create_project ONLY. The name of the project. REQUIRED for create_project."
+                                            },
                                             "title": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description": "ACTION: create_task ONLY. The title of the task. REQUIRED for create_task."
                                             },
                                             "projectId": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "description": "ACTION: create_task ONLY. The UUID of an EXISTING project. Get this from 'get_status'. REQUIRED for create_task. DO NOT GENERATE THIS."
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "description": "OPTIONAL. A description for the project or task."
+                                            },
+                                            "targetDate": {
+                                                "type": "string",
+                                                "format": "date",
+                                                "description": "OPTIONAL for create_project. The deadline in YYYY-MM-DD format. Example: '2026-03-15'."
                                             },
                                             "priority": {
                                                 "type": "string",
@@ -49,76 +74,60 @@
                                                     "LOW",
                                                     "MEDIUM",
                                                     "HIGH"
-                                                ]
+                                                ],
+                                                "description": "OPTIONAL for create_task. Defaults to 'MEDIUM'."
                                             },
-                                            "content": {
-                                                "type": "string"
+                                            "status": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "PLANNING",
+                                                    "ACTIVE",
+                                                    "ON_HOLD",
+                                                    "COMPLETED"
+                                                ],
+                                                "description": "OPTIONAL for create_project. Defaults to 'PLANNING'."
                                             }
                                         }
                                     }
-                                },
-                                "required": [
-                                    "action",
-                                    "payload"
-                                ]
+                                }
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Action successful",
+                        "description": "Action completed successfully.",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
                                     "properties": {
                                         "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "description": "A success message."
                                         },
-                                        "data": {
-                                            "type": "object"
+                                        "project": {
+                                            "type": "object",
+                                            "description": "The created project object (for create_project)."
+                                        },
+                                        "task": {
+                                            "type": "object",
+                                            "description": "The created task object (for create_task)."
+                                        },
+                                        "projects": {
+                                            "type": "array",
+                                            "description": "Array of all projects (for get_status)."
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                }
-            }
-        },
-        "/api/projects": {
-            "get": {
-                "operationId": "getProjects",
-                "summary": "List all projects",
-                "description": "Retrieve a list of all active projects and their metadata.",
-                "responses": {
-                    "200": {
-                        "description": "List of projects",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "id": {
-                                                "type": "string"
-                                            },
-                                            "name": {
-                                                "type": "string"
-                                            },
-                                            "status": {
-                                                "type": "string"
-                                            },
-                                            "description": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    },
+                    "400": {
+                        "description": "Bad request. Check your action or payload."
+                    },
+                    "500": {
+                        "description": "Server error. Check the error message for details."
                     }
                 }
             }
